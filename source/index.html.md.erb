@@ -1,0 +1,98 @@
+---
+title: EMCS API testing guide
+weight: 10
+---
+
+# EMCS API testing guide
+<%= partial 'documentation/partials/google_tag_manager_js' %>
+Learn how to test the compatibility of your software with [Excise Movement Control System (EMCS) API](/api-documentation/docs/api/service/excise-movement-control-system-api/1.0).
+
+## Before you start
+
+When you are ready to test your software, first read and understand the [EMCS API service guide](/guides/emcs-api-service-guide/) and [EMCS API technical interface specification](/guides/excise-movement-control-system-api-tis/) if you have not already done so.
+
+You must complete the following steps before testing the API.
+
+1. Ensure that you have an [HMRC developer account](https://developer.service.hmrc.gov.uk/developer/login) - if you do not have one, you must [register for an account](https://developer.service.hmrc.gov.uk/developer/registration), activate it by email, and sign in.
+2. [Create an application](https://developer.service.hmrc.gov.uk/developer/applications/add/sandbox) in our test environment called the sandbox.
+3. Subscribe to the Excise Movement Control System API on the manage API subscriptions page.
+4. Obtain your [Client ID and Client secret credentials](https://developer.service.hmrc.gov.uk/api-documentation/docs/authorisation/credentials).
+5. Use the [Create Test User API](https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/api-platform-test-user/1.0) to create one or more test users for your sandbox application. 
+
+## Testing your software
+
+1. Test the [authorisation process](https://developer.service.hmrc.gov.uk/api-documentation/docs/authorisation/user-restricted-endpoints).
+2. Use your application to make calls to our stubbed test API in the [testing process](documentation/testing-process).
+3. Test the [test scenarios](documentation/test-scenarios).
+
+### Test environment
+
+To allow users to be able to rapidly test the new EMCS API, we have stubbed the back end. To act as a realistic representation of the production API, the stub provides the same validation for level 1 and level 2 validation as the production API will. It does not provide level 3 validation.
+
+You can simulate common error responses by sending messages with standard inputs. These are detailed in the [test scenarios](documentation/test-scenarios.html).
+
+## Push pull notification testing
+When testing your software, you can be sent automatic notifications using the Push Pull Notifications API.
+
+This is where notifications from EMCS are sent to your software in near real time.
+
+Consignors will receive Push Pull Notifications from the service. These notifications rely on the ERN being associated with a BoxId, which is updated each time an 815 draft movement is sent; this association remains valid for 30 days. Consignees will also receive these notifications when they have submitted an 815 draft movement as a consignor within the last 30 days, since their ERN is then linked to a BoxId under the same conditions.
+
+To get these automatic messages, you must:
+
+- subscribe to the [Push Pull Notifications Service](https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/push-pull-notifications-api/1.0)
+- subscribe to the Excise Movement Control System (EMCS) API
+- configure the notification URL in the subscription configuration section of Developer Hub
+
+Already subscribed to the EMCS API?
+
+You will need to set up a Push Pull Notification API BoxID to receive the notifications.
+To do this go to the Manage API subscriptions page for your application in the Developer Hub.
+Go to the section Excise Movement Control System, and simply toggle from Yes to No then back to Yes.
+
+**Note:**
+if your notification web address is hosted by Amazon Web Services (AWS) then you must either use [edge-optimised custom domain names](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-edge-optimized-custom-domain-name.html)
+or [regional custom domain names](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-regional-api-custom-domain-create.html).
+
+
+### Example of a Push Notification
+
+The following is an example of the push notification showing the link to the messageUri
+
+```
+{
+    "notificationId": "c7f5b4bb-15b8-4805-bde0-fec4e3499af5",
+    "boxId": "aa57010f-a349-4169-82fb-d3571097b380",
+    "messageContentType": "application/json",
+    "message": "{
+        \"movementId\":\"4d543312-c043-4257-b617-2ac52594001d\",
+        \"messageUri\":\"/movements/4d543312-c043-4257-b617-2ac52594001d/messages/GB100000000305228\",
+        \"messageId\":\"GB100000000305228\",
+        \"consignor\":\"XIWK714220000\",
+        \"consignee\":\"XIWK714220000\",
+        \"arc\":\"24GB00000000000385976\",
+        \"ern\":\"XIWK714220000\"
+        }",
+    "status": "PENDING",
+    "createdDateTime": "2024-03-15T16:12:14.645+0000"
+}
+```
+
+## Related documentation
+
+- [EMCS API service guide](/guides/emcs-api-service-guide/)
+- [EMCS API reference](/api-documentation/docs/api/service/excise-movement-control-system-api/1.0/oas/page)
+- [EMCS API technical interface specification](/guides/excise-movement-control-system-api-tis/)
+- [Changelogs](/guides/emcs-api-service-guide/documentation/change-logs.html)
+
+## Getting help and support
+
+Before contacting us, find out if there is planned API downtime or a technical issue by checking [HMRC API Platform Status](https://api-platform-status.production.tax.service.gov.uk/) and [Excise Movement Control System service availability](https://www.gov.uk/government/publications/excise-movement-and-control-system-emcs-service-availability-and-issues).
+
+If you have specific questions about the EMCS API, contact our Software Developer Support (SDS) Team. You’ll get an initial response within 2 working days.
+
+You can also email questions to [SDSTeam@hmrc.gov.uk](mailto:SDSTeam@hmrc.gov.uk). We might ask for more detailed information when we respond.
+
+## Changelog
+
+You can find the changelog for this document in the [emcs-api-testing-guide GitHub wiki](https://github.com/hmrc/emcs-api-testing-guide/wiki/EMCS-API-Testing-Guide-changelog).

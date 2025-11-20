@@ -1,0 +1,778 @@
+---
+title: Test scenarios
+weight: 40
+---
+
+# Test scenarios
+<%= partial 'documentation/partials/google_tag_manager_js' %>
+You should test the following scenarios to make sure your software is compatible with EMCS API.
+
+## Endpoint: Submit a new draft excise movement
+
+You should test [this endpoint](/api-documentation/docs/api/service/excise-movement-control-system-api/1.0/oas/page#tag/Movements/operation/submitMovement) first.
+
+To test this endpoint in the External Test environment, you will need to provide a request with an XML body that conforms to the [IE815 XML Schema](https://github.com/hmrc/excise-movement-control-system-api/blob/main/app/xsd/ie815.xsd). An [IE815 example XML](https://github.com/hmrc/excise-movement-control-system-api/blob/main/resources/public/api/conf/1.0/examples/IE815.xml) can be found on GitHub.
+
+### Get messages
+
+If you also want to test the endpoint ['Get all messages for an excise movement using the movementId'](#endpoint-get-all-messages-for-an-excise-movement-using-the-movementid), you must use one of the LRNs in that section.
+
+### Error cases
+
+You can activate specific responses by passing in specific values in 2 ways:
+
+1. As a local reference number (LRN). This is a legacy testing method and will be deprecated.
+2. As a MessageIdentifier value in the XML header. This is the preferred method and will take the form below:
+
+```
+<urn:Message>
+  <urn:Header>
+    <urn1:MessageSender>token</urn1:MessageSender>
+    <urn1:MessageRecipient>token</urn1:MessageRecipient>
+    <urn1:DateOfPreparation>2008-09-29</urn1:DateOfPreparation>
+    <urn1:TimeOfPreparation>00:18:33</urn1:TimeOfPreparation>
+    <urn1:MessageIdentifier>[MESSAGE IDENTIFIER VALUE]</urn1:MessageIdentifier>
+    <!--Optional:-->
+    <urn1:CorrelationIdentifier>token</urn1:CorrelationIdentifier>
+  </urn:Header>
+</urn:Message>
+```
+
+You can send the following values to simulate responses:
+
+
+| Message Identifier / LRN value     | 	Response                 |
+|:-----------------------------|:--------------------------|
+| SendA400                     | 400 Bad Request           |
+| SendA404                     | 404 Not Found             |
+| SendA500                     | 500 Internal Server Error |
+| SendA503                     | 503 Service Unavailable   |
+| Any other valid value        | 202 Accepted              |
+
+A success response will take the form of 
+
+```
+{
+  "movementId": "cfdb20c7-d0b0-4b8b-a071-737d68dede5e",
+  "boxId": "4e56b0da-63bf-439d-98d4-22bf7d12f098",
+  "localReferenceNumber": "LRNQA20230909022221",
+  "consignorId": "GBWK002281023",
+  "consigneeId": "GBWKQOZ8OVLYR"
+}
+```
+
+A 400 Bad Request error response will take the form of
+
+```
+{
+  "dateTime": "2021-12-17T09:30:47Z",
+  "message": "Json validation failed",
+  "debugMessage": "user is missing but it is required",
+  "correlationId": "3e8dae97-b586-4cef-8511-68ac12da9028"
+}
+```
+
+A 404 Not Found error response will take the form of
+
+```
+{
+  "dateTime": "2021-12-17T09:30:47Z",
+  "message": "Received error response from server",
+  "debugMessage": "Connection refused; nested exception is java.net.ConnectException: Connection refused",
+  "correlationId": "3e8dae97-b586-4cef-8511-68ac12da9028"
+}
+```
+
+If the XML contains Level 1 or Level 2 validation errors, a 422 Unprocessable Entity error response will be returned in the form of
+
+```
+{
+  "dateTime": '2021-12-17T09:31:12Z'
+  "message": "Validation error"
+  "debugMessage": "Validation error(s) occurred"
+  "correlationId": "1229482a-b278-49c6-9500-8ba9f883b2b0",
+  "validatorResults": [
+    {
+      "errorCategory": "business",
+      "errorType": 8084,
+      "errorReason": "The Date of Dispatch you entered is incorrect. It must be today or later. Please amend your entry and resubmit.",
+      "errorLocation": "/urn:IE815[1]/urn:Body[1]/urn:SubmittedDraftOfEADESAD[1]/urn:EadEsadDraft[1]/urn:DateOfDispatch[1]",
+      "originalAttributeValue": "2024-03-05"
+    }
+  ]
+}
+```
+
+
+A 500 Internal Server Error response will take the form of
+
+```
+{
+  "dateTime": "2021-12-17T09:30:47Z",
+  "message": "Invalid JSON structure",
+  "debugMessage": "JSON parse error: Unexpected character",
+  "correlationId": "3e8dae97-b586-4cef-8511-68ac12da9028"
+}
+```
+
+A 503 Service Unavailable error response will take the form of
+
+```
+{
+  "dateTime": "2021-12-17T09:30:47Z",
+  "message": "CIRCUIT_BREAKER - 815_CB is OPEN",
+  "debugMessage": "CircuitBreaker '815_CB' is OPEN and does not permit further calls",
+  "correlationId": "3e8dae97-b586-4cef-8511-68ac12da9028"
+}
+```
+
+
+## Endpoint: Get excise movements
+
+You must make sure you have first tested the [Submit a draft excise movement (IE815) endpoint](#endpoint-submit-a-new-draft-excise-movement), and received a success response.
+
+You can test [this endpoint](/api-documentation/docs/api/service/excise-movement-control-system-api/1.0/oas/page#tag/Movements/operation/getAllMovements) in the External Test environment by calling `https://test-api.service.hmrc.gov.uk/customs/excise/movements?lrn=[YOUR_LRN]&ern=[YOUR_ERN]&arc=[YOUR_ARC]&updatedSince=[DATE_TIME]`.
+
+All four query parameters are optional.
+
+If you are polling this endpoint for updated movements, you may want to consider using the latest `lastUpdated` from the response as the `updatedSince` query parameter, next time you poll as an optimisation.
+
+A success response will take the form of 
+
+```
+[
+  {
+    "movementId" : "cfdb20c7-d0b0-4b8b-a071-737d68dede5e",
+    "consignorId": "GBWK002281023",
+    "localReferenceNumber": "LRNQA20230909022221",
+    "consigneeId": "GBWKQOZ8OVLYR",
+    "administrativeReferenceCode": "35WE3B5EDSYSZ86STVKH8",
+    "lastUpdated": "2024-01-17T12:25:29.540Z"
+  },
+  {
+    "movementId" : "0055d33f-579e-4560-a3ee-03482d8d9dad",
+    "consignorId": "GBWK002281023",
+    "consigneeId": "GBWKQOZ8OVLYQ",
+    "localReferenceNumber": "LRNQA20230909022224",
+    "lastUpdated": "2024-01-17T15:25:29.540Z"
+  }
+]
+```
+
+A 400 Bad Request will be returned if the query parameters are invalid, and will take the form of
+
+```
+{
+  "dateTime": "2024-03-06T12:09:47.420688Z",
+  "message": "Invalid date format provided in the updatedSince query parameter",
+  "debugMessage": "Date format should be like '2020-11-15T17:02:34.00Z'"
+}
+```
+
+
+## Endpoint: Get excise movement
+
+You must make sure you have first tested the [Submit a draft excise movement (IE815) endpoint](#endpoint-submit-a-new-draft-excise-movement), and received a success response.
+
+You can test [this endpoint](/api-documentation/docs/api/service/excise-movement-control-system-api/1.0/oas/page#tag/Movements/operation/getMovement) in the External Test environment by calling `https://test-api.service.hmrc.gov.uk/customs/excise/movements/[YOUR_MOVEMENT_ID]`.
+
+A success response will take the form of
+
+```
+{
+  "movementId" : "cfdb20c7-d0b0-4b8b-a071-737d68dede5e",
+  "consignorId": "GBWK002281023",
+  "localReferenceNumber": "LRNQA20230909022221",
+  "consigneeId": "GBWKQOZ8OVLYR",
+  "administrativeReferenceCode": "35WE3B5EDSYSZ86STVKH8",
+  "lastUpdated": "2024-01-17T15:25:29.540Z"
+}
+```
+
+A 400 Bad Request will be returned if the movement ID is an invalid format, and will take the form of
+
+```
+{
+  "dateTime": "2024-03-06T12:10:53.039067Z",
+  "message": "Movement Id format error",
+  "debugMessage": "The movement ID should be a valid UUID"
+}
+```
+
+A 404 Not Found will be returned if the movement does not exist or is not valid for the logged in ERNs, and will take the form of
+
+```
+{
+  "dateTime": "2024-03-06T12:12:03.658700Z",
+  "message": "Movement not found",
+  "debugMessage": "Movement 22d87934-b05f-49d3-a427-9bbd8441b04b could not be found"
+}
+```
+
+## Endpoint: Submit a message for an excise movement
+
+You must make sure you have first tested the [Submit a draft excise movement (IE815) endpoint](#endpoint-submit-a-new-draft-excise-movement), and received a success response, before testing [this endpoint](/api-documentation/docs/api/service/excise-movement-control-system-api/1.0/oas/page#tag/Movements/operation/postMessage) in the External Test environment.
+
+### IE818 - Report of receipt
+
+You will need to provide a request with an XML body that conforms to the [IE818 XML Schema](https://github.com/hmrc/excise-movement-control-system-api/blob/main/app/xsd/ie818.xsd). An [IE818 example XML](https://github.com/hmrc/excise-movement-control-system-api/blob/main/resources/public/api/conf/1.0/examples/IE818.xml) can be found on GitHub.
+
+You can activate specific responses by passing in specific values in 2 ways:
+
+1. As a ComplementaryInformation value in the XML body. This is a legacy testing method and will be deprecated.
+2. As a MessageIdentifier value in the XML header. This is the preferred method and will take the form below:
+
+```
+<urn:Message>
+  <urn:Header>
+    <urn1:MessageSender>token</urn1:MessageSender>
+    <urn1:MessageRecipient>token</urn1:MessageRecipient>
+    <urn1:DateOfPreparation>2008-09-29</urn1:DateOfPreparation>
+    <urn1:TimeOfPreparation>00:18:33</urn1:TimeOfPreparation>
+    <urn1:MessageIdentifier>[MESSAGE IDENTIFIER VALUE]</urn1:MessageIdentifier>
+    <!--Optional:-->
+    <urn1:CorrelationIdentifier>token</urn1:CorrelationIdentifier>
+  </urn:Header>
+</urn:Message>
+```
+You can send the following values to simulate responses:
+
+| MessageIdentifier / ComplementaryInformation value    | 	Response                 |
+|:-----------------------------|:--------------------------|
+| SendA400                     | 400 Bad Request           |
+| SendA404                     | 404 Not Found             |
+| SendA500                     | 500 Internal Server Error |
+| SendA503                     | 503 Service Unavailable   |
+| Any other valid value        | 202 Accepted             |
+
+A 202 success response will take the form of
+
+```
+{
+  "movementId": "cfdb20c7-d0b0-4b8b-a071-737d68dede5e",
+  "localReferenceNumber": "LRNQA20230909022221",
+  "consignorId": "GBWK002281023",
+  "consigneeId": "GBWKQOZ8OVLYR",
+  "administrativeReferenceCode": "35WE3B5EDSYSZ86STVKH8"
+}
+```
+
+A 400 Bad Request error response will take the form of
+
+```
+{
+  "dateTime": "2021-12-17T09:30:47Z",
+  "message": "Json validation failed",
+  "debugMessage": "user is missing but it is required",
+  "correlationId": "3e8dae97-b586-4cef-8511-68ac12da9028"
+}
+```
+
+A 404 Not Found error response will take the form of
+
+```
+{
+  "dateTime": "2021-12-17T09:30:47Z",
+  "message": "Received error response from server",
+  "debugMessage": "Connection refused; nested exception is java.net.ConnectException: Connection refused",
+  "correlationId": "3e8dae97-b586-4cef-8511-68ac12da9028"
+}
+```
+
+If the XML contains Level 1 or Level 2 validation errors, a 422 Unprocessable Entity error response will be returned in the form of
+
+```
+{
+  "dateTime": '2021-12-17T09:31:12Z'
+  "message": "Validation error"
+  "debugMessage": "Validation error(s) occurred"
+  "correlationId": "1229482a-b278-49c6-9500-8ba9f883b2b0",
+  "validatorResults": [
+    {
+      "errorCategory": "business",
+      "errorType": 8705,
+      "errorReason": "If the consignee place of delivery trader ID starts with GB then the destination office ID must start with GB. Please amend your entry and resubmit",
+      "errorLocation": "/urn:IE818[1]/urn:Body[1]/urn:AcceptedOrRejectedReportOfReceiptExport[1]/urn:DestinationOffice[1]",
+      "originalAttributeValue": "XI123445"
+     }
+  ]
+}
+```
+
+
+A 500 Internal Server Error response will take the form of
+
+```
+{
+  "dateTime": "2021-12-17T09:30:47Z",
+  "message": "Invalid JSON structure",
+  "debugMessage": "JSON parse error: Unexpected character",
+  "correlationId": "3e8dae97-b586-4cef-8511-68ac12da9028"
+}
+```
+
+A 503 Service Unavailable error response will take the form of
+
+```
+{
+  "dateTime": "2021-12-17T09:30:47Z",
+  "message": "CIRCUIT_BREAKER - 815_CB is OPEN",
+  "debugMessage": "CircuitBreaker '815_CB' is OPEN and does not permit further calls",
+  "correlationId": "3e8dae97-b586-4cef-8511-68ac12da9028"
+}
+```
+
+### All other messages
+
+Below is a list of messages that you can test, along with their relevant XML schema and example XMLs:
+
+| Message | Schema link | Example XML |
+| --- | --- | --- |
+| IE810 - Cancellation | [IE810 XSD](https://github.com/hmrc/excise-movement-control-system-api/blob/main/app/xsd/ie810.xsd) | [IE810 example XML](https://github.com/hmrc/excise-movement-control-system-api/blob/main/resources/public/api/conf/1.0/examples/IE810.xml) |
+| IE813 - Change of destination | [IE813 XSD](https://github.com/hmrc/excise-movement-control-system-api/blob/main/app/xsd/ie813.xsd) | [IE813 example XML](https://github.com/hmrc/excise-movement-control-system-api/blob/main/resources/public/api/conf/1.0/examples/IE813.xml) |
+| IE819 - Alert or rejection of E-AD/E-SAD | [IE819 XSD](https://github.com/hmrc/excise-movement-control-system-api/blob/main/app/xsd/ie819.xsd) | [IE819 example XML](https://github.com/hmrc/excise-movement-control-system-api/blob/main/resources/public/api/conf/1.0/examples/IE819.xml) |
+| IE837 - Explain delay to delivery | [IE837 XSD](https://github.com/hmrc/excise-movement-control-system-api/blob/main/app/xsd/ie837.xsd) | [IE837 example XML from consignor](https://github.com/hmrc/excise-movement-control-system-api/blob/main/resources/public/api/conf/1.0/examples/IE837_consignor.xml)<br></br>[IE837 example XML from consignee](https://github.com/hmrc/excise-movement-control-system-api/blob/main/resources/public/api/conf/1.0/examples/IE837_consignee.xml) |
+| IE871 - Reason for shortage | [IE871 XSD](https://github.com/hmrc/excise-movement-control-system-api/blob/main/app/xsd/ie871.xsd) | [IE871 example XML](https://github.com/hmrc/excise-movement-control-system-api/blob/main/resources/public/api/conf/1.0/examples/IE810.xml) |
+
+You will need to provide a request with an XML body that conforms to the relevant XML Schema.
+
+Within the XML header you can activate specific responses by passing in specific MessageIdentifier values, as in the form below:
+
+```
+<urn:Message>
+  <urn:Header>
+    <urn1:MessageSender>token</urn1:MessageSender>
+    <urn1:MessageRecipient>token</urn1:MessageRecipient>
+    <urn1:DateOfPreparation>2008-09-29</urn1:DateOfPreparation>
+    <urn1:TimeOfPreparation>00:18:33</urn1:TimeOfPreparation>
+    <urn1:MessageIdentifier>[MESSAGE IDENTIFIER VALUE]</urn1:MessageIdentifier>
+    <!--Optional:-->
+    <urn1:CorrelationIdentifier>token</urn1:CorrelationIdentifier>
+  </urn:Header>
+</urn:Message>
+```
+
+You can send the following MessageIdentifier values to simulate responses:
+
+
+| MessageIdentifier value     | 	Response                 |
+|:-----------------------------|:--------------------------|
+| SendA400                     | 400 Bad Request           |
+| SendA404                     | 404 Not Found             |
+| SendA500                     | 500 Internal Server Error |
+| SendA503                     | 503 Service Unavailable   |
+| Any other valid value        | 202 Accepted              |
+
+A 202 success response will take the form of
+
+```
+{
+  "movementId": "cfdb20c7-d0b0-4b8b-a071-737d68dede5e",
+  "localReferenceNumber": "LRNQA20230909022221",
+  "consignorId": "GBWK002281023",
+  "consigneeId": "GBWKQOZ8OVLYR",
+  "administrativeReferenceCode": "35WE3B5EDSYSZ86STVKH8"
+}
+```
+
+A 400 Bad Request error response will take the form of
+
+```
+{
+  "dateTime": "2021-12-17T09:30:47Z",
+  "message": "Json validation failed",
+  "debugMessage": "user is missing but it is required",
+  "correlationId": "3e8dae97-b586-4cef-8511-68ac12da9028"
+}
+```
+
+A 404 Not Found error response will take the form of
+
+```
+{
+  "dateTime": "2021-12-17T09:30:47Z",
+  "message": "Received error response from server",
+  "debugMessage": "Connection refused; nested exception is java.net.ConnectException: Connection refused",
+  "correlationId": "3e8dae97-b586-4cef-8511-68ac12da9028"
+}
+```
+
+If the XML contains Level 1 or Level 2 validation errors, a 422 Unprocessable Entity error response will be returned in the form of
+
+```
+{
+  "dateTime": '2021-12-17T09:31:12Z'
+  "message": "Validation error"
+  "debugMessage": "Validation error(s) occurred"
+  "correlationId": "1229482a-b278-49c6-9500-8ba9f883b2b0",
+  "validatorResults": [
+    {
+      "errorCategory": "schema",
+      "errorType": 0,
+      "errorReason": "string value 'A' does not match pattern for CancellationReasonCodeType in namespace urn:publicid:-:EC:DGTAXUD:EMCS:PHASE4:EMCS:V3.01",
+      "errorLocation": "/urn10:IE810[1]/urn10:Body[1]/urn10:CancellationOfEAD[1]/urn10:Cancellation[1]/urn10:CancellationReasonCode[1]",
+      "originalAttributeValue": "A"
+    }
+  ]
+}
+```
+
+A 500 Internal Server Error response will take the form of
+
+```
+{
+  "dateTime": "2021-12-17T09:30:47Z",
+  "message": "Invalid JSON structure",
+  "debugMessage": "JSON parse error: Unexpected character",
+  "correlationId": "3e8dae97-b586-4cef-8511-68ac12da9028"
+}
+```
+
+A 503 Service Unavailable error response will take the form of
+
+```
+{
+  "dateTime": "2021-12-17T09:30:47Z",
+  "message": "CIRCUIT_BREAKER - 815_CB is OPEN",
+  "debugMessage": "CircuitBreaker '815_CB' is OPEN and does not permit further calls",
+  "correlationId": "3e8dae97-b586-4cef-8511-68ac12da9028"
+}
+```
+
+## Endpoint: Get all messages for an excise movement using the movementId
+
+
+You can test [this endpoint](/api-documentation/docs/api/service/excise-movement-control-system-api/1.0/oas/page#tag/Movements/operation/getAllMessages) in the External Test environment by calling `https://test-api.service.hmrc.gov.uk/customs/excise/movements/{movementId}/messages?updatedSince=[DATE_TIME]`, where updatedSince is an optional query parameter.
+
+The movementId is returned in response to a draft submission, and is a random unique UUID.
+
+If you replace `{movementId}` in the URL with the movementID associated with a submission that was made with one of the following LRNs in the XML body, you can test the scenarios and message responses from this [table](#get-messages-test-scenarios).
+
+
+You should make sure the example LRNs are copied exactly, and are lowercase when you make the XML body for the draft submission. Using a movementId that is not associated with a valid LRN will return no messages.
+
+A success response will take the form of 
+
+```
+[
+  {
+    "encodedMessage": "PElFODE1PjwhLS0gRXhhbXBsZSBJRTgxNSBtZXNzYWdlIC0tPjwvSUU4MTU+",
+    "messageType": "IE801",
+    "messageId": "XI00005",
+    "createdOn": "2023-10-30T15:36:08.985Z"
+    "recipient": "GBWK002281023"
+  },
+  {
+    "encodedMessage": "PElFODAxPjwhLS0gRXhhbXBsZSBJRTgwMSBtZXNzYWdlIC0tPjwvSUU4MDE+",
+    "messageType": "IE818",
+    "messageId": "XI00008",
+    "createdOn": "2023-10-30T15:36:08.985Z"
+    "recipient": "GBWKQOZ8OVLYR"
+  }
+]
+```
+
+## Endpoint: Get a message for an excise movement using the movementId and the messageId
+
+You can test [this endpoint](/api-documentation/docs/api/service/excise-movement-control-system-api/1.0/oas/page#tag/Movements/operation/getMessage) in the External Test environment by calling `https://test-api.service.hmrc.gov.uk/customs/excise/movements/{movementId}/messages/{messageId}`.
+
+The movementId is returned in response to a draft submission, and is a random unique UUID.
+
+If you replace `{movementId}` and the `{messageId}`in the URL with the respective movementID associated with a submission that was made with one of the following LRNs in the XML body, and with the messageId belonging to one of the message for an excise movement then you will able to test the scenarios and message responses in this [table](#get-messages-test-scenarios).
+
+
+You should make sure the example LRNs are copied exactly, and are lowercase when you make the XML body for the draft submission. Using a movementId that is not associated with a valid LRN will return a not found error.
+
+A success response will return the message as XML.
+
+
+## Endpoint: Get information relating to an excise trader
+
+
+You can test [this endpoint](/api-documentation/docs/api/service/excise-movement-control-system-api/1.0/oas/page#tag/Traders/operation/prevalidateTrader) in the External Test environment by calling `https://test-api.service.hmrc.gov.uk/customs/excise/traders/pre-validate`.
+
+There is a limit of 10 product codes per request.
+
+A request takes the form of
+
+```
+{
+  "exciseTraderValidationRequest": {
+    "exciseTraderRequest": {
+      "exciseRegistrationNumber": "GBWK000000206",
+      "entityGroup": "UK Record",
+      "validateProductAuthorisationRequest": [
+        {
+          "product": {
+            "exciseProductCode": "W300"
+          }
+        },
+        {
+          "product": {
+            "exciseProductCode": "S200"
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+A 200 success response will take the form of
+
+```
+{
+    "validationTimeStamp": "2021-12-17T09:31:12Z",
+    "exciseRegistrationNumber": "GBWK000000206",
+    "entityGroup": "UK Record",
+    "validTrader": true,
+    "traderType": "1",
+    "validateProductAuthorisationResponse": {
+        "valid": true
+    }
+}
+```
+
+A 200 Invalid Trader response will take the form of
+
+```
+{
+    "validationTimeStamp": "2021-12-17T09:31:12Z",
+    "exciseRegistrationNumber": "GBWK000000000",
+    "entityGroup": "UK Record",
+    "validTrader": false,
+    "errorCode": "6",
+    "errorText": "Not Found"
+}
+```
+
+A 200 Invalid Product response will take the form of
+
+```
+{
+    "validationTimeStamp": "2021-12-17T09:31:12Z",
+    "exciseRegistrationNumber": "GBWK000000206",
+    "entityGroup": "UK Record",
+    "validTrader": true,
+    "traderType": "1",
+    "validateProductAuthorisationResponse": {
+        "valid": false,
+        "productError": [
+            {
+                "exciseProductCode": "W300",
+                "errorCode": "2",
+                "errorText": "Unauthorised EPC"
+            }
+        ]
+    }
+}
+```
+
+A 400 Bad Request error will occur for the following:
+
+- invalid request 
+- badly formed JSON 
+- mandatory fields are missing
+
+A 400 Bad Request error will take the form of
+
+```
+{
+  "dateTime": "2021-12-17T09:30:47Z",
+  "message": "PreValidateTrader error",
+  "debugMessage": "Error occurred during PreValidateTrader request",
+  "correlationId": "3e8dae97-b586-4cef-8511-68ac12da9028"
+}
+```
+
+A 500 Internal Server Error response can be triggered to represent internal server errors. It will take the form of
+
+```
+{
+  "dateTime": "2021-12-17T09:30:47Z",
+  "message": "Invalid JSON structure",
+  "debugMessage": "JSON parse error: Unexpected character",
+  "correlationId": "3e8dae97-b586-4cef-8511-68ac12da9028"
+}
+```
+
+The following scenarios can be tested:
+
+| Scenario                     | 	Response                 |
+|:-----------------------------|:--------------------------|
+|Send exciseRegistrationNumber GBWK000000000|	200 with Invalid Trader error|
+|Send exciseProductCode as W300 or S200|	200 with Invalid Product error(s)|
+|Send both the above|	200 with Invalid Trader and Invalid Product errors|
+|Send exciseRegistrationNumber SendA400	|400 Bad Request with no message payload|
+|Send exciseRegistrationNumber SendA500	|500 Internal Server Error with no message payload|
+|Any other valid value|	200 Success with Valid Trader Response|
+
+We have the following mappings for TraderType:
+
+| ERN Prefix              | Trader Type Description                         | Trader Type Value |
+|:------------------------|:------------------------------------------------|:------------------|
+| GBWK or XIWK            | Authorised Warehouse Keeper                     | 1                 |
+| GB00                    | Tax Warehouse                                   | 2                 |
+| GBRC or XIRC            | Registered Consignor                            | 3                 |
+| XI00                    | Registered Consignee                            | 4                 |
+| XITC                    | Temporary Registered Consignee                  | 5                 |
+| XIAA                    | Temporary Registered Consignee Certification    | 6                 |
+| XIAB                    | Temporary Certified Consignor Certification     | 6                 |
+| XIAC                    | Temporary Certified Consignee Certification     | 6                 |
+| XIPA                    | Certified Consignor                             | 7                 |
+| XIPB                    | Certified Consignee                             | 7                 |
+| XIPC                    | Temporary Certified Consignor                   | 7                 |
+| XIPD                    | Temporary Certified Consignee                   | 7                 |
+| GBDR                    | Duty Representative                             | 7                 |
+| GBOG                    | Registered Owner                                | 7                 |
+| <Anything else>         | Not Found                                       | 7                 |
+
+## Endpoint: Subscribe an ERN to receive Push/Pull notifications
+
+
+You can test [this endpoint](/api-documentation/docs/api/service/excise-movement-control-system-api/1.0/oas/page#tag/Subscribe/operation/subscribeErn) in the External Test environment by calling `https://test-api.service.hmrc.gov.uk/customs/excise/erns/[YOUR_ERN]/subscription`.
+
+You will need to provide a request with a valid ern within the URI.
+
+The query Parameter is mandatory.
+
+A 200 success response will take the form of
+
+```
+{
+  "boxId": "42c75e22-7bba-44f2-a610-4b4c3b262e3e"
+}
+```
+
+A 400 Bad Request error will occur for the following:
+
+- Invalid JSON or mandatory fields missing
+
+A 400 Bad Request error will take the form of
+
+```
+{
+  "dateTime": "2024-01-17T15:27:29.540089Z",
+  "message": "Not valid SubscribeErn message",
+  "debugMessage": "Error parsing Json: exciseRegistrationNumber missing"
+}
+```
+
+A 401 Unauthorised error will occur for the following:
+
+- Authorisation Expired
+- Unauthorised ERN
+- Invalid enrolment parameter
+
+A 401 Unauthorised error will take the form of
+
+```
+{
+  "dateTime": "2024-01-17T15:27:29.540089Z",
+  "message": "Authorisation error",
+  "debugMessage": "Unauthorised Exception with error Bearer token expired"
+}
+```
+
+A 403 Forbidden error will occur for the following:
+
+- ERN being subscribed is not in authorisation bearer token
+
+A 403 Forbidden error will take the form of
+
+```
+{
+  "dateTime": "2024-01-17T16:27:41.095827Z",
+  "message": "Forbidden",
+  "debugMessage": "Invalid ERN provided"
+}
+```
+
+A 500 Internal Server Error response can be triggered to represent internal server errors. It will take the form of
+
+```
+{
+  "dateTime": "2021-12-17T09:30:47Z",
+  "message": "Invalid JSON structure",
+  "debugMessage": "JSON parse error: Unexpected character",
+  "correlationId": "3e8dae97-b586-4cef-8511-68ac12da9028"
+}
+```
+
+## Endpoint: Unsubscribe an ERN to no longer receive Push/Pull notifications
+
+You can test [this endpoint](/api-documentation/docs/api/service/excise-movement-control-system-api/1.0/oas/page#tag/Subscribe/operation/unsubscribeErn) in the External Test environment by calling `https://test-api.service.hmrc.gov.uk/customs/excise/erns/[YOUR_ERN]/subscription`.
+
+You will need to provide a request with a valid ern within the URI.
+
+The query Parameter is mandatory.
+
+A 200 success response will take the form of
+
+```
+""
+```
+
+A 400 Bad Request error will occur for the following:
+
+- Invalid JSON or mandatory fields missing
+
+A 400 Bad Request error will take the form of
+
+```
+{
+  "dateTime": "2024-01-17T15:27:29.540089Z",
+  "message": "Not valid UnsubscribeErn message",
+  "debugMessage": "Error parsing Json: exciseRegistrationNumber missing"
+}
+```
+
+A 401 Unauthorised error will occur for the following:
+
+- Authorisation Expired
+- Unauthorised ERN
+- Invalid enrolment parameter
+
+A 401 Unauthorised error will take the form of
+
+```
+{
+  "dateTime": "2024-01-17T15:27:29.540089Z",
+  "message": "Authorisation error",
+  "debugMessage": "Unauthorised Exception with error Bearer token expired"
+}
+```
+
+A 500 Internal Server Error response can be triggered to represent internal server errors. It will take the form of
+
+```
+{
+  "dateTime": "2021-12-17T09:30:47Z",
+  "message": "Invalid JSON structure",
+  "debugMessage": "JSON parse error: Unexpected character",
+  "correlationId": "3e8dae97-b586-4cef-8511-68ac12da9028"
+}
+```
+
+## Get Messages Test Scenarios
+
+Local Reference Numbers (LRN) can be used in any order to test a scenario. They can also be used multiple times by using a unique ERN each time
+
+| Scenario                            | Local Reference Number (LRN)  | Message ID                                                     | Response                                                  |
+| ----------------------------------- |------------------------------ | -------------------------------------------------------------- |---------------------------------------------------------- |
+| Failed submission                   | lrnie8158976912               | XI000001                                                     | IE704                                                     |
+| Successful submission               | lrnie8156540856               | XI000002                                                     | IE801                                                     |
+| Happy path delivered                | lrnie8155973812               | XI000003 <br> XI0000015                                      | IE801 <br> IE818                                          |
+| Goods received but rejected         | lrnie8151695045               | XI000005 <br> XI0000016 <br> XI0000017                       | IE801 <br> IE818 <br> IE871                               |
+| Cancel a movement for a movementId  | lrnie8155743934               | XI000006 <br> XI0000018                                      | IE801 <br> IE810                                          |
+| Change consignee                    |	lrnie8154968571               | XI000003 <br> XI0000019 <br> XI000004                        | IE801 <br> IE813 <br> IE801 (Sequence number incremented) |
+| Consignee rejected before sent      |	lrnie8153786132               | XI000005 <br> XI0000020                                      | IE801 <br> IE819                                          |
+| Multiple messages with duplicate    |	lrnie8155743960               | XI0000021 <br> X00008 <br> X00004 <br> X00006 <br> X000012   | IE801 <br> IE819 <br> IE802 <br> IE818 <br> IE810         |
+| Movement interrupted                | lrnie8155755321               | XI000321 <br> GB0023121                                      | IE801 <br> IE807                                          |
+| Event occurs during transit         | lrnie8155755323               | XI000321 <br> XI0003265 <br> GB0023126                       | IE801 <br> IE840 <br> IE807                               |
+| Change of destination               | lrnie8155755325               | XI004321 <br> GB002312688                                    | IE801 <br> IE803                                          |
+| Goods exported (1)                  | lrnie8155755326               | XI004321A <br> XI004321B <br> XI004321C                      | IE801 <br> IE829 <br> IE818                               |
+| Goods exported (2)                  | lrnie8155755327               | XI004321D <br> XI004321B <br> XI004321E                      | IE801 <br> IE829 <br> IE818                               |
+| Custom rejection                    | lrnie8155755329               | XI004322AB <br> XI004322                                     | IE801 <br> IE839                                          |
+| Manual closure and status response  | lrnie8155755330               | XI004323 <br> XI00432M <br> XI00432RR                        | IE801 <br> IE881 <br> IE905                               |
+| Message reminder                    | lrnie8155755331               | XI001624 <br> X00017                                         | IE801 <br> IE802                                          |
