@@ -2,7 +2,7 @@
 service_name: EMCS API testing guide
 
 # The route that will be used to access this site (with tailing slash)
-service_link: /guides/emcs-api-testing-guide/
+service_link: /guides/emcs-api-testing-guide-4-2/
 
 
 # ================================================
