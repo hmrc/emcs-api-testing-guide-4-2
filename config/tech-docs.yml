@@ -1,5 +1,5 @@
 # Human read-able name for this site, displayed in the header bar
-service_name: EMCS API testing guide
+service_name: EMCS API 4.2 testing guide
 
 # The route that will be used to access this site (with tailing slash)
 service_link: /guides/emcs-api-testing-guide-4-2/
