@@ -1,128 +1,131 @@
-# 30 July 2024
+# Changelog
 
-## Add `lastUpdated` in Movement object responses
+## 30 July 2024
 
-### Updates
+### Add `lastUpdated` in Movement object responses
+
+#### Updates
 
 * The movement object response in the get movements endpoint (GET [/customs/excise/movements](https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/excise-movement-control-system-api/1.0/oas/page#tag/Movements/operation/getAllMovements)) and the get messages for a movement endpoint (GET [/customs/excise/movements/{movementId}/messages](https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/excise-movement-control-system-api/1.0/oas/page#tag/Movements/operation/getAllMessages)) has been updated to include the `lastUpdated` field
 
   > This can be used when polling for updated movements and messages, if you use the latest `lastUpdated` from the get movements response, you can us that as the `updatedSince` in the next call to ensure you only get updated movements since the most recently updated movement.
 
-# 22 July 2024
+## 22 July 2024
 
-## Minor update to testing guide
+### Minor update to testing guide
 
-### Additions
+#### Additions
 * A new test scenario demonstrating an IE802 (Reminder) being returned has been added
 
-### What impact does this have?
+#### What impact does this have?
 A new scenario returning an IE801 and IE802 has been added to the [test scenarios](https://developer.service.hmrc.gov.uk/guides/emcs-api-testing-guide/documentation/test-scenarios.html#get-messages-test-scenarios)
 
-# 20 June 2024
+## 20 June 2024
 
-## Updates based on third party developer's feedback
+### Updates based on third party developer's feedback
 
-### Additions
+#### Additions
 * A new query filter `traderType` has been added to the Get Movements and Get Messages for a Movement Endpoints
 * A message recipient ERN field has been added to the Message response in the Get Messages for a Movement Endpoint
 
-### Updates
+#### Updates
 * The groupings of the well-known LRN test scenarios have been removed. LRNs can now be submitted in any order and no longer need to be submitted in groups
 * The time delay to get messages back from the stub for the well-known LRNs has been reduced
 * Response formats have been tidied up and made consistent
 * Pre-validate trader Endpoint explicitly states that there is a limit of 10 products that can be validated against a Trader
 
-### Removals
+#### Removals
 * The movement `status` field has been removed from responses
 * Forbidden (403) error responses have been removed from the Get Movements and Pre-validate Trader Endpoints
 * Mandatory headers have been removed from the Pre-validate trader Endpoint
 
   > these were accidentally added to the documentation, but are not relevant to third party developers
 
-### What impact does this have?
+#### What impact does this have?
 New features have been added based on feedback we received from third party developers.
 
 The test scenarios are now a lot easier (and quicker) to get messages back for the well-known LRNs.
 
 The documentation has been made consistent and correctly reflects what has been implemented.
 
-# 19 March 2024
+## 19 March 2024
 
-## Updates for FS4.1, Push Notifications and Create Test User API
+### Updates for FS4.1, Push Notifications and Create Test User API
 
-### Additions
+#### Additions
 * New Push Notifications testing guide
 * New testing scenario for endpoint to get a specific message XML body for a movement
 
-### Updates
+#### Updates
 * Updated Schemas, and example XML messages for FS4.1
 * Fixed the Create Test User API to now take an `exciseNumber` instead of using the `eoriNumber` field
+
   > Existing test users created with the legacy `eoriNumber` temporary solution will still work for EMCS API
 
-### What impact does this have?
+#### What impact does this have?
 You can now get notifications via the PPNS API for messages received
 
 Examples and XSD schemas now align with DDNEA version 3.14 (FS4.1)
 
 Test users can now be created using the Create Test User API by using the `exciseNumber` field in the request
 
-# 7 March 2024
+## 7 March 2024
 
-## Test Scenarios Updated
+### Test Scenarios Updated
 
-### Additions
+#### Additions
 * Testing scenarios for the 'Get excise movement' endpoint have been added.
 * More test scenarios have been added for the 'Get all messages' endpoint.
 * Testing scenarios for the 'Get information relating to an excise trader' endpoint have been added.
 
-### Updates
+#### Updates
 * Examples of the 'Submit a draft excise movement' and 'Get all movements' endpoints have been updated to include the movement ID.
 * Examples of XML validation errors have been added for the 'Submit a draft excise movement' and 'Submit a message for an excise movement' endpoint.
 * 'Get all messages' has been updated to reflect that it is now driven by the movement ID instead of the local reference number.
 * The scenarios listed in the 'Get all messages' section has been updated to include information on what messages will be returned by the scenario.
 
-### What impact does this have?
+#### What impact does this have?
 You can use the testing guide to test the 'Get excise movement' and 'Get information relating to an excise trader' endpoints.
 You can use the testing guide to test using movement IDs.
 You can use the testing guide to test more 'Get all messages' scenarios
 
-# 17 November 2023
+## 17 November 2023
 
-## Test scenarios updated
+### Test scenarios updated
 
-### Additions
+#### Additions
 The test scenarios have been updated with the following changes:
 
 * Test LRNs were added to the 'Submit a draft excise movement' endpoint.
 * Example XMLs were added to 'Submit a draft excise movement' and 'Submit a message' endpoints.
 
-### Removals
+#### Removals
 
 * The error code test scenarios were removed for the 'Get excise movements' endpoint. They were considered early in development, and included in the Testing Guide in error.
 
-### What impact does this have?
+#### What impact does this have?
 The test scenarios contain more accurate information to enable more effective testing.
 
-# 09 November 2023
+## 09 November 2023
 
-## Test scenarios updated
+### Test scenarios updated
 
-### Updates
+#### Updates
 The test scenarios have been updated with the following changes:
 
 * 'Get all messages' and 'Get all movements' example success responses have been updated to reflect that they are arrays.
 * IE815 and IE818 test scenarios have been updated to reflect that there are now 2 ways of testing these messages.
 * Test scenarios for submitting IE810, IE813, IE819, IE837 and IE871 have been updated to reflect the use of the MessageIdentifier value in testing these messages. Only IE810 and IE837 have been released today, the rest should be released tomorrow.
 
-### What impact does this have?
+#### What impact does this have?
 You can now use the testing guide to test scenarios for IE815, IE818, IE810 and IE837 messages.
 
 
-# 30 October 2023
+## 30 October 2023
 
-## Testing guide created
+### Testing guide created
 
-### Additions
+#### Additions
 A new testing guide has been created to allow you to test your software with our stubbed test API. This includes:
 
 * Guidance on what steps to take before you start testing
