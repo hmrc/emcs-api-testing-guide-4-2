@@ -758,21 +758,26 @@ A 500 Internal Server Error response can be triggered to represent internal serv
 
 Local Reference Numbers (LRN) can be used in any order to test a scenario. They can also be used multiple times by using a unique ERN each time
 
-| Scenario                            | Local Reference Number (LRN)  | Message ID                                                     | Response                                                  |
-| ----------------------------------- |------------------------------ | -------------------------------------------------------------- |---------------------------------------------------------- |
-| Failed submission                   | lrnie8158976912               | XI000001                                                     | IE704                                                     |
-| Successful submission               | lrnie8156540856               | XI000002                                                     | IE801                                                     |
-| Happy path delivered                | lrnie8155973812               | XI000003 <br> XI0000015                                      | IE801 <br> IE818                                          |
-| Goods received but rejected         | lrnie8151695045               | XI000005 <br> XI0000016 <br> XI0000017                       | IE801 <br> IE818 <br> IE871                               |
-| Cancel a movement for a movementId  | lrnie8155743934               | XI000006 <br> XI0000018                                      | IE801 <br> IE810                                          |
-| Change consignee                    |	lrnie8154968571               | XI000003 <br> XI0000019 <br> XI000004                        | IE801 <br> IE813 <br> IE801 (Sequence number incremented) |
-| Consignee rejected before sent      |	lrnie8153786132               | XI000005 <br> XI0000020                                      | IE801 <br> IE819                                          |
-| Multiple messages with duplicate    |	lrnie8155743960               | XI0000021 <br> X00008 <br> X00004 <br> X00006 <br> X000012   | IE801 <br> IE819 <br> IE802 <br> IE818 <br> IE810         |
-| Movement interrupted                | lrnie8155755321               | XI000321 <br> GB0023121                                      | IE801 <br> IE807                                          |
-| Event occurs during transit         | lrnie8155755323               | XI000321 <br> XI0003265 <br> GB0023126                       | IE801 <br> IE840 <br> IE807                               |
-| Change of destination               | lrnie8155755325               | XI004321 <br> GB002312688                                    | IE801 <br> IE803                                          |
-| Goods exported (1)                  | lrnie8155755326               | XI004321A <br> XI004321B <br> XI004321C                      | IE801 <br> IE829 <br> IE818                               |
-| Goods exported (2)                  | lrnie8155755327               | XI004321D <br> XI004321B <br> XI004321E                      | IE801 <br> IE829 <br> IE818                               |
-| Custom rejection                    | lrnie8155755329               | XI004322AB <br> XI004322                                     | IE801 <br> IE839                                          |
-| Manual closure and status response  | lrnie8155755330               | XI004323 <br> XI00432M <br> XI00432RR                        | IE801 <br> IE881 <br> IE905                               |
-| Message reminder                    | lrnie8155755331               | XI001624 <br> X00017                                         | IE801 <br> IE802                                          |
+Use the message identifier provided below within the header to select message scenarios:
+```
+<urn1:MessageIdentifier>EMCSTS01</urn1:MessageIdentifier>
+```
+
+| Scenario                           | Journey Code in message identifier field | Message ID                                                 | Response                                                  |
+| ---------------------------------- | ---------------------------------------- | ---------------------------------------------------------- |---------------------------------------------------------- |
+| Failed submission                  | EMCSTS01                                 | XI000001                                                   | IE704                                                     |
+| Successful submission              | EMCSTS02                                 | XI000002                                                   | IE801                                                     |
+| Happy path delivered               | EMCSTS03                                 | XI000003 <br> XI0000015                                    | IE801 <br> IE818                                          |
+| Goods received but rejected        | EMCSTS04                                 | XI000005 <br> XI0000016 <br> XI0000017                     | IE801 <br> IE818 <br> IE871                               |
+| Cancel a movement for a movementId | EMCSTS05                                 | XI000006 <br> XI0000018                                    | IE801 <br> IE810                                          |
+| Change consignee                   | EMCSTS06                                 | XI000003 <br> XI0000019 <br> XI000004                      | IE801 <br> IE813 <br> IE801 (Sequence number incremented) |
+| Consignee rejected before sent     | EMCSTS07                                 | XI000005 <br> XI0000020                                    | IE801 <br> IE819                                          |
+| Multiple messages with duplicate   | EMCSTS08                                 | XI0000021 <br> X00008 <br> X00004 <br> X00006 <br> X000012 | IE801 <br> IE819 <br> IE802 <br> IE818 <br> IE810         |
+| Movement interrupted               | EMCSTS09                                 | XI000321 <br> GB0023121                                    | IE801 <br> IE807                                          |
+| Event occurs during transit        | EMCSTS10                                 | XI000321 <br> XI0003265 <br> GB0023126                     | IE801 <br> IE840 <br> IE807                               |
+| Change of destination              | EMCSTS11                                 | XI004321 <br> GB002312688                                  | IE801 <br> IE803                                          |
+| Goods exported (1)                 | EMCSTS12                                 | XI004321A <br> XI004321B <br> XI004321C                    | IE801 <br> IE829 <br> IE818                               |
+| Goods exported (2)                 | EMCSTS13                                 | XI004321D <br> XI004321B <br> XI004321E                    | IE801 <br> IE829 <br> IE818                               |
+| Custom rejection                   | EMCSTS14                                 | XI004322AB <br> XI004322                                   | IE801 <br> IE839                                          |
+| Manual closure and status response | EMCSTS15                                 | XI004323 <br> XI00432M <br> XI00432RR                      | IE801 <br> IE881 <br> IE905                               |
+| Message reminder                   | EMCSTS16                                 | XI001624 <br> X00017                                       | IE801 <br> IE802                                          |
